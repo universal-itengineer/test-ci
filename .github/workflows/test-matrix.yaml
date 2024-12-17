@@ -1,0 +1,78 @@
+name: Matrix-Based Build Workflow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+  push:
+    # branches:
+    #   - main
+    #   - pre-alpha
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  prod_ce_setup_build:
+    runs-on: ubuntu-latest
+    name: Build and Push CE
+
+    strategy:
+      matrix:
+        registry_setup:
+          - type: "prod"
+            registry: "prog-registry"
+            registry_login: "PROD_MODULES_REGISTRY_LOGIN"
+            registry_password: "PROD_MODULES_REGISTRY_PASSWORD"
+          - type: "dev"
+            registry: "dev-registry"
+            registry_login: "DEV_MODULES_REGISTRY_LOGIN"
+            registry_password: "$DEV_MODULES_REGISTRY_PASSWORD"
+
+    steps:
+      # Set Variables
+      - name: Set Global Variables
+        run: |
+          echo "MODULES_MODULE_SOURCE=$MODULES_REGISTRY/$MODULE_SOURCE_NAME/ce/modules" >> "$GITHUB_ENV"
+          echo "MODULE_BUILD_PATH=${{ vars.PROD_REGISTRY }}/${{ vars.PROD_MODULE_SOURCE_NAME }}/ce/modules" >> "$GITHUB_ENV"
+
+      # Debug: Show Global Variables
+      - name: Show Global Variables
+        run: |
+          echo "MODULES_REGISTRY=$MODULES_REGISTRY"
+          echo "MODULES_MODULE_NAME=$MODULES_MODULE_NAME"
+          echo "MODULES_MODULE_SOURCE=$MODULES_MODULE_SOURCE"
+          echo "MODULES_MODULE_TAG=$MODULES_MODULE_TAG"
+        shell: bash
+
+      # Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Matrix-Driven Registry Setup
+      - name: Set Up ${{ matrix.registry_setup.type.toUpper }}
+        run: |
+          echo "registry:          ${{ matrix.registry_setup.registry }}          <-- "
+          echo "registry_login:    ${{ matrix.registry_setup.registry_login }}    <-- "
+          echo "registry_password: ${{ matrix.registry_setup.registry_password }} <-- "
+
+
+      # Build and Push Step (Executed Once)
+      - name: Build and Push Module
+        if: ${{ matrix.registry_setup.type == 'prod' }} # Prevent duplicate builds, e.g., only for prod in matrix
+        run: |
+          cat << EOF
+          module_source: "$MODULES_MODULE_SOURCE"
+          module_name: "$MODULES_MODULE_NAME"
+          module_tag: "$MODULES_MODULE_TAG"
+          EOF
+      
+      
+      
+      # - name: Set Up ${{ matrix.registry_setup.type | toUpper }}
+      #   uses: deckhouse/modules-actions/setup@storage
+      #   with:
+      #     registry: ${{ matrix.registry_setup.registry }}
+      #     registry_login: ${{ matrix.registry_setup.registry_login }}
+      #     registry_password: ${{ matrix.registry_setup.registry_password }}
