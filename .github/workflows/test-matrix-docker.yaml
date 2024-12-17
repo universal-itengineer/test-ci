@@ -2,11 +2,11 @@ name: Login to Docker Registries
 
 on:
   workflow_dispatch:
-  pull_request:
-      types: [opened, reopened, synchronize, labeled, unlabeled]
-  push:
-      branches:
-      - main
+  # pull_request:
+  #   types: [opened, reopened, synchronize, labeled, unlabeled]
+  # push:
+  #   branches:
+  #   - main
 
 defaults:
   run:

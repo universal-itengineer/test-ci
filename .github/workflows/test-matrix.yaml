@@ -2,9 +2,9 @@ name: Matrix-Based Build Workflow
 
 on:
   workflow_dispatch:
-  pull_request:
-    types: [opened, reopened, synchronize, labeled, unlabeled]
-  push:
+  # pull_request:
+  #   types: [opened, reopened, synchronize, labeled, unlabeled]
+  # push:
     # branches:
     #   - main
     #   - pre-alpha
