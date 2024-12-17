@@ -1,0 +1,35 @@
+name: Login to Docker Registries
+
+on:
+  workflow_dispatch:
+  pull_request:
+      types: [opened, reopened, synchronize, labeled, unlabeled]
+  push:
+      branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  docker-login:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        registry-data:
+          - registry: docker.io
+            username: DOCKER_USERNAME_1
+            password: DOCKER_PASSWORD_1
+          - registry: ghcr.io
+            username: GHCR_USERNAME
+            password: GHCR_PASSWORD
+          - registry: my-private-registry.com
+            username: PRIVATE_REGISTRY_USERNAME
+            password: PRIVATE_REGISTRY_PASSWORD
+
+    steps:
+      - name: Log in to Docker registry
+        run: |
+          echo "${{ matrix.registry-data.password }} | docker login ${{ matrix.registry-data.registry }} \
+            --username ${{ matrix.registry-data.username }} --password-stdin"
