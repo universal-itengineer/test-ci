@@ -32,10 +32,10 @@ jobs:
 
     steps:
       # Set Variables
-      - name: Set Global Variables
+      - name: Set Global Variables ${{ matrix.registry_setup.type }}
         run: |
           echo "MODULES_MODULE_SOURCE=$MODULES_REGISTRY/$MODULE_SOURCE_NAME/ce/modules" >> "$GITHUB_ENV"
-          echo "MODULE_BUILD_PATH=${{ vars.PROD_REGISTRY }}/${{ vars.PROD_MODULE_SOURCE_NAME }}/ce/modules" >> "$GITHUB_ENV"
+          echo "MODULE_BUILD_PATH=${{ matrix.registry_setup.registry }}/${{ matrix.registry_setup.registry_login }}:${{ matrix.registry_setup.registry_password }}ce/modules" >> "$GITHUB_ENV"
 
       # Debug: Show Global Variables
       - name: Show Global Variables
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v4
 
       # Matrix-Driven Registry Setup
-      - name: Set Up ${{ matrix.registry_setup.type.toUpper }}
+      - name: Set Up ${{ matrix.registry_setup.type.uppercase }}
         run: |
           echo "registry:          ${{ matrix.registry_setup.registry }}          <-- "
           echo "registry_login:    ${{ matrix.registry_setup.registry_login }}    <-- "
