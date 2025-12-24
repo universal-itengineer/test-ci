@@ -27,5 +27,33 @@ jobs:
             curl -Ik https://popa1.com
             echo "status [$?]"
             set -e
+            echo "after 'set -e'"
             echo "status [$?]"
             echo "wow"
+      - name: json
+        id: json
+        run: |
+          json=$(cat <<'EOF'
+          {
+            "CSI": "replicated",
+            "Date": "2025-12-24",
+            "StartTime": "19:31:40",
+            "Branch": "1757/merge",
+            "Status": ":white_check_mark: SUCCESS!",
+            "Passed": 2,
+            "Failed": 0,
+            "Pending": 0,
+            "Skipped": 167,
+            "Link": "https://github.com/deckhouse/virtualization/actions/runs/20491151243"
+          }
+          EOF
+          )
+
+          echo "$json" | jq
+          echo "ss=$(echo "$json" | jq -c .)" >> $GITHUB_OUTPUT
+          echo "ss=$(echo "$json" | jq -c .)" >> $GITHUB_ENV
+
+      - name: tst env
+        run: |
+          echo "env_ss=${{ env.ss }}"
+          echo "output_ss=${{ steps.json.outputs.ss }}"
