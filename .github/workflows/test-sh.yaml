@@ -1,0 +1,31 @@
+name: Test bash in CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: test exit code
+    steps:
+      - name: Run E2E
+        id: e2e-report
+        env:
+            TIMEOUT: 2h
+            CSI: ceph
+        run: |
+            set +e
+            curl -Ik https://popa1.com
+            echo "status [$?]"
+            set -e
+            echo "status [$?]"
+            echo "wow"
