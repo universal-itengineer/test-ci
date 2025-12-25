@@ -1,0 +1,35 @@
+name: Reusable Workflow with Artifact Upload
+
+on:
+  workflow_call:
+    outputs:
+      artifact-name:
+        description: "Name of the uploaded artifact"
+        value: ${{ jobs.upload-artifact.outputs.artifact-name }}
+
+defaults:
+  run:
+    shell: bash
+
+
+jobs:
+  upload-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: "my-artifact-${{ github.run_id }}"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Create test file
+        run: |
+          echo "Hello from reusable workflow!" > test.txt
+          mkdir -p artifacts
+          cp test.txt artifacts/
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "my-artifact-${{ github.run_id }}"
+          path: artifacts/
+          retention-days: 1

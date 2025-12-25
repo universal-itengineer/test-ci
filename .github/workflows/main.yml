@@ -1,0 +1,33 @@
+name: Main Workflow with Reusable Call
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/reusable.yml
+    # outputs will contains the name of the uploaded artifact
+
+  download-artifact:
+    needs: call-reusable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ needs.call-reusable.outputs.artifact-name }}
+          path: downloaded-artifacts/
+          
+      - name: Display downloaded files
+        run: |
+          ls -la downloaded-artifacts/
+          cat downloaded-artifacts/test.txt
