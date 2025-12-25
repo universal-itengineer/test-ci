@@ -20,6 +20,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Github vars
+        run: |
+          echo "GITHUB_JOB: $GITHUB_JOB"
+          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo "github.run_id: ${{ github.run_id }}"
+          echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
+          echo "GITHUB_WORKFLOW_SHA: $GITHUB_WORKFLOW_SHA"
         
       - name: Create test file
         run: |
