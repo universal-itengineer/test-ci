@@ -44,7 +44,7 @@ jobs:
       - name: Create test file
         run: |
           DATE=$(date +%s)
-          echo "Hello from reusable workflow!" > test-$DATE.txt
+          echo "Hello from reusable workflow! | ${{ inputs.artifact-name }}" > test-$DATE.txt
           mkdir -p artifacts
           cp test-$DATE.txt artifacts/
           

@@ -56,9 +56,10 @@ jobs:
           echo "-----------"
           echo "Merged true"
           ls -la downloaded-artifacts-merged/
-
+          echo " "
           for file in $(find downloaded-artifacts* -type f); do
             echo "file: $file"
             echo "cat $file"
             cat $file
+            echo " "
           done
