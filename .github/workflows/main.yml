@@ -12,22 +12,43 @@ defaults:
 jobs:
   call-reusable:
     uses: ./.github/workflows/reusable.yml
+  call-reusable2:
+    uses: ./.github/workflows/reusable.yml
     # outputs will contains the name of the uploaded artifact
 
   download-artifact:
-    needs: call-reusable
+    needs: 
+      - call-reusable
+      - call-reusable2
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Download artifact
+      
+      - name: Download artifact [merge false]
         uses: actions/download-artifact@v5
         with:
-          name: ${{ needs.call-reusable.outputs.artifact-name }}
+          pattern: "my-artifact-*"
           path: downloaded-artifacts/
+          merge-multiple: false
+      
+      - name: Download artifact [merge true]
+        uses: actions/download-artifact@v5
+        with:
+          pattern: "my-artifact-*"
+          path: downloaded-artifacts-merged/
+          merge-multiple: true
+        
+      # - name: Download artifact
+      #   uses: actions/download-artifact@v5
+      #   with:
+      #     name: ${{ needs.call-reusable.outputs.artifact-name }}
+      #     path: downloaded-artifacts/
           
       - name: Display downloaded files
         run: |
+          echo "Merged false"
           ls -la downloaded-artifacts/
-          cat downloaded-artifacts/test.txt
+          echo "-----------"
+          echo "Merged true"
+          ls -la downloaded-artifacts-merged/
