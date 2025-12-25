@@ -2,6 +2,11 @@ name: Reusable Workflow with Artifact Upload
 
 on:
   workflow_call:
+    inputs:
+      artifact-name:
+        description: "Name of the uploaded artifact"
+        required: true
+        type: string
     outputs:
       artifact-name:
         description: "Name of the uploaded artifact"
@@ -16,7 +21,7 @@ jobs:
   upload-artifact:
     runs-on: ubuntu-latest
     outputs:
-      artifact-name: "my-artifact-${{ github.run_id }}"
+      artifact-name: "${{ inputs.artifact-name }}"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,13 +43,14 @@ jobs:
         
       - name: Create test file
         run: |
-          echo "Hello from reusable workflow!" > test-${{ github.run_id }}.txt
+          DATE=$(date +%s)
+          echo "Hello from reusable workflow!" > test-$DATE.txt
           mkdir -p artifacts
-          cp test-${{ github.run_id }}.txt artifacts/
+          cp test-$DATE.txt artifacts/
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "my-artifact-${{ github.run_id }}"
+          name: "${{ inputs.artifact-name }}"
           path: artifacts/
           retention-days: 1
