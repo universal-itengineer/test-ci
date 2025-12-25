@@ -26,6 +26,7 @@ jobs:
           echo "GITHUB_JOB: $GITHUB_JOB"
           echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
           echo "github.run_id: ${{ github.run_id }}"
+          echo "GITHUB_ACTION: $GITHUB_ACTION"
           echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
           echo "GITHUB_SHA: $GITHUB_SHA"
           echo "GITHUB_REF: $GITHUB_REF"
