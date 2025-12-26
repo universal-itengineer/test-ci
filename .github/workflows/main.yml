@@ -7,7 +7,7 @@ on:
     types: [opened, reopened, synchronize, labeled, unlabeled]
     branches: 
       - main
-      - test
+      - chore/test/ci-test-1
   workflow_dispatch:
 
 defaults:
