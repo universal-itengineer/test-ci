@@ -3,6 +3,8 @@ name: Main Workflow with Reusable Call
 on:
   push:
     branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
   workflow_dispatch:
 
 defaults:
