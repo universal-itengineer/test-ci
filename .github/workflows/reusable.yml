@@ -41,6 +41,8 @@ jobs:
           echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
           echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
           echo "GITHUB_WORKFLOW_SHA: $GITHUB_WORKFLOW_SHA"
+          echo "GITHUB_WORKFLOW_REF: $GITHUB_WORKFLOW_REF"
+          echo "GITHUB_WORKFLOW: $GITHUB_WORKFLOW"
 
           echo " "
           echo '${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}'
@@ -52,7 +54,7 @@ jobs:
         run: |
           JOBS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
-            | jq -r '.jobs[] | select(.name == "${{ github.job }}") | .id')
+            | jq -r '.jobs[] | select(.name | contains("${{ github.job }}") | .id')
           echo "$JOBS"
 
           echo " "
