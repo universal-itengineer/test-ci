@@ -54,6 +54,12 @@ jobs:
             "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
             | jq -r '.jobs[] | select(.name == "${{ github.job }}") | .id')
           echo "$JOBS"
+
+          echo " "
+          echo "curl"
+          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs"
+
           echo "JOB_ID=$JOBS" >> $GITHUB_ENV
       - name: Use job ID
         run: |
