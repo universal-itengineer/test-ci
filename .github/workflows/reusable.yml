@@ -58,7 +58,7 @@ jobs:
         run: |
           JOBS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
-            | jq -r '.jobs[] | select(.name | contains("${{ inputs.storage-key }}")).id')
+            | jq -r '.jobs[] | select(.name | match("(${{ inputs.storage-key }}) ")).id')
           echo "$JOBS"
 
           echo " "
