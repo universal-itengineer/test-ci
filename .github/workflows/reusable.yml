@@ -7,6 +7,10 @@ on:
         description: "Name of the uploaded artifact"
         required: true
         type: string
+      storage-key:
+        description: "Storage key"
+        required: true
+        type: string
     outputs:
       artifact-name:
         description: "Name of the uploaded artifact"
@@ -41,6 +45,42 @@ jobs:
           echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
           echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
           echo "GITHUB_WORKFLOW_SHA: $GITHUB_WORKFLOW_SHA"
+          echo "GITHUB_WORKFLOW_REF: $GITHUB_WORKFLOW_REF"
+          echo "GITHUB_WORKFLOW: $GITHUB_WORKFLOW"
+
+          echo " "
+          echo '${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}'
+          echo "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          echo " "
+          echo '${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${run_id:-${GITHUB_RUN_ID}}'
+          echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${run_id:-${GITHUB_RUN_ID}}"
+      - name: Get current job ID
+        run: |
+          # JOBS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          #   "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+          #   | jq -r '.jobs[] | select(.name | match("(${{ inputs.storage-key }}) ")).id')
+          # echo "$JOBS"
+
+          RESPONCE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
+
+          JOBS=$(echo "$RESPONCE" | jq -r '.jobs[] | select(.name | match("(${{ inputs.storage-key }}) ")).id')
+          echo "$JOBS"
+
+          URL=$(echo "$RESPONCE" | jq -r '.jobs[] | select(.name | match("(${{ inputs.storage-key }}) ")).html_url')
+          echo "$URL"
+
+          echo " "
+          echo "curl"
+          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs"
+
+          echo "JOB_ID=$JOBS" >> $GITHUB_ENV
+          echo "JOB_URL=$URL" >> $GITHUB_ENV
+      - name: Use job ID
+        run: |
+          echo "Job URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
+          echo "Job URL: ${{ env.JOB_URL }}"
         
       - name: Create test file
         run: |
