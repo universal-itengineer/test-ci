@@ -7,6 +7,10 @@ on:
         description: "Name of the uploaded artifact"
         required: true
         type: string
+      storage-key:
+        description: "Storage key"
+        required: true
+        type: string
     outputs:
       artifact-name:
         description: "Name of the uploaded artifact"
@@ -52,20 +56,20 @@ jobs:
           echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${run_id:-${GITHUB_RUN_ID}}"
       - name: Get current job ID
         run: |
-          # JOBS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          #   "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
-          #   | jq -r '.jobs[] | select(.name | contains("${{ github.job }}") | .id')
-          # echo "$JOBS"
+          JOBS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+            | jq -r '.jobs[] | select(.name | contains("${{ inputs.storage-key }}")).id')
+          echo "$JOBS"
 
           echo " "
           echo "curl"
           curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs"
 
-          # echo "JOB_ID=$JOBS" >> $GITHUB_ENV
-      # - name: Use job ID
-      #   run: |
-      #     echo "Job URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
+          echo "JOB_ID=$JOBS" >> $GITHUB_ENV
+      - name: Use job ID
+        run: |
+          echo "Job URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
         
       - name: Create test file
         run: |

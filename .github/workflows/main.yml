@@ -16,10 +16,12 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       artifact-name: "my-artifact-call-reusable"
+      storage-key: "reusable"
   call-reusable2:
     uses: ./.github/workflows/reusable.yml
     with:
       artifact-name: "my-artifact-call-reusable2"
+      storage-key: "reusable2"
     # outputs will contains the name of the uploaded artifact
 
   download-artifact:
