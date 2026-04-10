@@ -65,7 +65,9 @@ jobs:
             "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
 
           JOBS=$(echo "$RESPONCE" | jq -r '.jobs[] | select(.name | match("(${{ inputs.storage-key }}) ")).id')
+          echo "::group:: JOBS"
           echo "$JOBS"
+          echo "::endgroup::"
 
           URL=$(echo "$RESPONCE" | jq -r '.jobs[] | select(.name | match("(${{ inputs.storage-key }}) ")).html_url')
           echo "$URL"
