@@ -38,13 +38,23 @@ jobs:
 
       - name: Create script file to import
         run: |
+          # Create a sample package.json to read
+          cat > package.json << 'PKGEOF'
+          {
+            "name": "test-ci",
+            "version": "1.0.0"
+          }
+          PKGEOF
+
           cat > my-script.js << 'EOF'
           // This file is imported and executed
           const fs = require('fs');
           const path = require('path');
 
           module.exports = async ({ github, context, core }) => {
-            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            // process.cwd() returns the workflow working directory (where checkout happened)
+            const packageJsonPath = path.join(process.cwd(), 'package.json');
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
             core.info(`Package name: ${packageJson.name}`);
             core.info(`Package version: ${packageJson.version}`);
             core.setOutput('package-name', packageJson.name);
@@ -56,7 +66,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const myScript = require('./my-script.js');
+            const myScript = require('${{ github.workspace }}/my-script.js');
             await myScript({ github, context, core });
 
   # Example 3: Using actions/typescript-action with local action
@@ -190,7 +200,7 @@ jobs:
       - name: Install and build reusable action
         working-directory: ./.github/actions/my-hello-action
         run: |
-          npm install
+          npm install --include=dev
           npm run build
 
       - id: hello
