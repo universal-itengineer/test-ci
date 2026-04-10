@@ -1,0 +1,78 @@
+name: TypeScript Examples
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Example 1: Simple inline script with actions/github-script
+  # This approach runs TypeScript/JavaScript directly in the YAML workflow
+  inline-script-example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run inline TypeScript script
+        uses: actions/github-script@v9
+        with:
+          script: |
+            // This runs in Node.js context with github, context, core, etc.
+            const { data: refData } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'heads/main'
+            });
+            console.log('Main branch SHA:', refData.object.sha);
+            console.log('Triggered by:', context.actor);
+
+            // Use core for output
+            core.setOutput('main-sha', refData.object.sha);
+
+  # Example 2: Import a file using actions/github-script with require
+  # The script file (my-script.js) and package.json are committed to the repo
+  import-file-example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run imported script
+        uses: actions/github-script@v9
+        with:
+          result-encoding: string
+          script: |
+            const myScript = require('${{ github.workspace }}/my-script.js');
+            await myScript({ github, context, core });
+
+  # Example 3: Using a pre-committed TypeScript action
+  # The action is defined in .github/actions/my-inline-action/
+  local-typescript-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run local TypeScript action
+        uses: ./.github/actions/my-inline-action
+        with:
+          name: World
+
+  # Example 4: Using a reusable TypeScript action from .github/actions/
+  # The action is pre-built and committed to the repo
+  reusable-typescript-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - id: hello
+        name: Run reusable TypeScript action
+        uses: ./.github/actions/my-hello-action
+        with:
+          name: UserName
+          uppercase: true
+
+      - name: Show action outputs
+        run: |
+          echo "Greeting: ${{ steps.hello.outputs.greeting }}"
+          echo "Length: ${{ steps.hello.outputs.greeting-length }}"

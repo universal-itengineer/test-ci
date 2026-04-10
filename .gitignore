@@ -1,0 +1,14 @@
+# Logs
+logs
+*.log
+
+# Dependency directories
+node_modules/
+.node_modules/
+jspm_packages/
+
+*.swp
+
+
+**/.vs
+**/.vscode/*

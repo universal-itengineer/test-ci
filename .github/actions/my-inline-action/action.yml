@@ -1,0 +1,17 @@
+name: 'My Inline TypeScript Action'
+description: 'A demo TypeScript action built inline in workflow'
+inputs:
+  name:
+    description: 'Name to greet'
+    required: true
+  token:
+    description: 'GitHub token for API calls'
+    required: false
+outputs:
+  greeting:
+    description: 'The greeting message'
+  default-branch:
+    description: 'Default branch of the repo'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
