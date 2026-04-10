@@ -1,0 +1,19 @@
+name: 'My Hello TypeScript Action'
+description: 'A reusable TypeScript action example'
+inputs:
+  name:
+    description: 'Name to greet'
+    required: true
+    default: 'World'
+  uppercase:
+    description: 'Convert greeting to uppercase'
+    required: false
+    default: 'false'
+outputs:
+  greeting:
+    description: 'The greeting message'
+  greeting-length:
+    description: 'Length of the greeting'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

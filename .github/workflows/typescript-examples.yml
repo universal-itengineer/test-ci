@@ -1,0 +1,206 @@
+name: TypeScript Examples
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Example 1: Simple inline script with actions/github-script
+  # This approach runs TypeScript/JavaScript directly in the YAML workflow
+  inline-script-example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run inline TypeScript script
+        uses: actions/github-script@v9
+        with:
+          script: |
+            // This runs in Node.js context with github, context, core, etc.
+            const { data: refData } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'heads/main'
+            });
+            console.log('Main branch SHA:', refData.object.sha);
+            console.log('Triggered by:', context.actor);
+
+            // Use core for output
+            core.setOutput('main-sha', refData.object.sha);
+
+  # Example 2: Import a file using actions/github-script with require
+  # This allows running code from a separate .js/.ts file
+  import-file-example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create script file to import
+        run: |
+          cat > my-script.js << 'EOF'
+          // This file is imported and executed
+          const fs = require('fs');
+          const path = require('path');
+
+          module.exports = async ({ github, context, core }) => {
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            core.info(`Package name: ${packageJson.name}`);
+            core.info(`Package version: ${packageJson.version}`);
+            core.setOutput('package-name', packageJson.name);
+          };
+          EOF
+
+      - name: Run imported script
+        uses: actions/github-script@v9
+        with:
+          result-encoding: string
+          script: |
+            const myScript = require('./my-script.js');
+            await myScript({ github, context, core });
+
+  # Example 3: Using actions/typescript-action with local action
+  # This requires: action.yml + dist/ (compiled TypeScript)
+  local-typescript-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cat > package.json << 'EOF'
+          {
+            "name": "my-typescript-action",
+            "version": "1.0.0",
+            "type": "module",
+            "dependencies": {
+              "@actions/core": "^1.10.0",
+              "@actions/github": "^6.0.0"
+            },
+            "devDependencies": {
+              "@vercel/ncc": "^0.38.0",
+              "typescript": "^5.0.0"
+            }
+          }
+          EOF
+          npm install
+
+      - name: Create TypeScript action source
+        run: |
+          mkdir -p src
+          cat > src/main.ts << 'EOF'
+          import * as core from '@actions/core';
+          import * as github from '@actions/github';
+
+          async function run(): Promise<void> {
+            try {
+              const name = core.getInput('name', { required: true });
+              const token = core.getInput('token');
+
+              core.info(`Hello, ${name}!`);
+              core.info(`Repository: ${github.context.repo.owner}/${github.context.repo.repo}`);
+
+              if (token) {
+                const octokit = github.getOctokit(token);
+                const { data } = await octokit.rest.repos.get({
+                  owner: github.context.repo.owner,
+                  repo: github.context.repo.repo,
+                });
+                core.info(`Default branch: ${data.default_branch}`);
+                core.setOutput('default-branch', data.default_branch);
+              }
+
+              core.setOutput('greeting', `Hello, ${name}!`);
+            } catch (error) {
+              if (error instanceof Error) {
+                core.setFailed(error.message);
+              }
+            }
+          }
+
+          run();
+          EOF
+
+          cat > tsconfig.json << 'EOF'
+          {
+            "compilerOptions": {
+              "target": "ES2020",
+              "module": "NodeNext",
+              "moduleResolution": "NodeNext",
+              "lib": ["ES2020"],
+              "outDir": "./dist",
+              "rootDir": "./src",
+              "strict": true,
+              "esModuleInterop": true,
+              "skipLibCheck": true
+            },
+            "include": ["src/**/*"]
+          }
+          EOF
+
+      - name: Build TypeScript
+        run: npx tsc
+
+      - name: Create action.yml
+        run: |
+          cat > action.yml << 'EOF'
+          name: 'My TypeScript Action'
+          description: 'A demo TypeScript action'
+          inputs:
+            name:
+              description: 'Name to greet'
+              required: true
+            token:
+              description: 'GitHub token for API calls'
+              required: false
+          outputs:
+            greeting:
+              description: 'The greeting message'
+            default-branch:
+              description: 'Default branch of the repo'
+          runs:
+            using: 'node20'
+            main: 'dist/main.js'
+          EOF
+
+      - name: Run local TypeScript action
+        uses: ./
+        with:
+          name: World
+
+  # Example 4: Using a reusable TypeScript action from .github/actions/
+  # This demonstrates the proper actions/typescript-action pattern
+  reusable-typescript-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build reusable action
+        working-directory: ./.github/actions/my-hello-action
+        run: |
+          npm install
+          npm run build
+
+      - id: hello
+        name: Run reusable TypeScript action
+        uses: ./.github/actions/my-hello-action
+        with:
+          name: Claude
+          uppercase: true
+
+      - name: Show action outputs
+        run: |
+          echo "Greeting: ${{ steps.hello.outputs.greeting }}"
+          echo "Length: ${{ steps.hello.outputs.greeting-length }}"
